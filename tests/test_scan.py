@@ -67,3 +67,12 @@ def test_noise_filtered():
     assert ("lib/models.ts", "openrouter") not in sp        # free /models listing
     assert sp[("scripts/bench.ts", "openai")]["dev_only"]
     assert not any("ORGANIZATION_ID" in e["name"] for e in r["public_secret_env"])
+
+def test_literal_key_in_browser_constructor():
+    d = tempfile.mkdtemp()
+    open(os.path.join(d, "index.html"), "w").write("<script type=module src=script.js></script>")
+    open(os.path.join(d, "script.js"), "w").write('import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";\nconst c = new GoogleGenerativeAI("your_key_here");\nc.getGenerativeModel({}).generateContent("x");\n')
+    out = os.path.join(d, "r.json")
+    subprocess.run([sys.executable, SCAN, d, "--json", out], check=True, capture_output=True)
+    s = json.load(open(out))["spend_points"][0]
+    assert s["runs_in"] == "browser" and s["severity"] == "red"

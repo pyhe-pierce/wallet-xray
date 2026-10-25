@@ -63,7 +63,7 @@ MODEL_FROM_BODY = re.compile(r"\bmodel\s*:\s*(body|req\.body|json|input|params|d
 MODEL_ALLOWLIST = re.compile(r"resolveModel|ALLOWED_MODELS|allowedModels|MODELS\[|\.includes\(\s*model|z\.enum\(", re.I)
 MAXTOK_FROM_BODY = re.compile(r"(max_tokens|maxTokens|maxOutputTokens)\s*:\s*(body|req\.body|json|input|params|data|chatSettings|settings)\.", re.I)
 BYOK = re.compile(r"apiKey\s*:\s*(profile|user|settings|userSettings|chatSettings|body|json|req\.body|keys?|userKeys?)\b[\w.?\[\]'\"]*|apiKey\s*:\s*\w+\.api_key\b|\(\s*\w*(profile|user|settings)\w*\.\w*api_?key", re.I)
-CREDENTIAL = re.compile(r"apiKey|api_key|process\.env|import\.meta\.env|Authorization|x-api-key|[?&]key=|\bnew\s+(GoogleGenAI|GoogleGenerativeAI|OpenAI|Anthropic|Together|Replicate)\s*\(\s*\w", re.I)
+CREDENTIAL = re.compile(r"apiKey|api_key|process\.env|import\.meta\.env|Authorization|x-api-key|[?&]key=|\bnew\s+(GoogleGenAI|GoogleGenerativeAI|OpenAI|Anthropic|Together|Replicate)\s*\(\s*[\w'\"`]", re.I)
 FANOUT = re.compile(r"Promise\.all\s*\(\s*\w+\.map|for\s*\(\s*(const|let)\s+\w+\s+of|\.map\(\s*async|forEach\(\s*async")
 WEBHOOK_VERIFY = re.compile(r"constructEvent|verifySignature|createHmac|timingSafeEqual|svix|new\s+Webhook\(|verifyWebhook|validateSignature|unwrap\(", re.I)
 DEV_PATH = re.compile(r"(^|/)(scripts?|bench(mark)?s?|tests?|__tests__|e2e|fixtures|examples?|seed|playground|stories)(/|$)|\.(test|spec|stories)\.\w+$", re.I)

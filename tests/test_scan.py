@@ -33,6 +33,8 @@ def test_cost_calc_runs():
     ex = os.path.join(ROOT, "skills", "wallet-xray", "references", "cost_input_example.json")
     p = subprocess.run([sys.executable, CALC, ex], check=True, capture_output=True, text=True)
     assert "Worst-case burn" in p.stdout and "margin" in p.stdout
+    assert "NO LIMIT" in p.stdout and "≥ $106.13/h" in p.stdout     # unbounded is labelled, not presented as a ceiling
+    assert "$130.13/h → $3.36/h" in p.stdout and "−97.4%" in p.stdout  # before/after
 
 
 # --- regressions found by testing on real open-source apps ---

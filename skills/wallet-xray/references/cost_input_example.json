@@ -1,20 +1,24 @@
 {
   "app": "Example Study App",
   "currency": "USD",
-  "prices_checked": "YYYY-MM-DD — fill from official pricing pages",
+  "prices_checked": "YYYY-MM-DD \u2014 fill from official pricing pages",
   "price_per_month": 9.99,
   "payment_fee_pct": 5.0,
   "payment_fee_fixed": 0.5,
   "free_users": 1000,
   "paying_users": 50,
   "free_user_usage_ratio": 0.2,
-  "usage_profiles": { "light": 10, "typical": 50, "heavy": 300 },
+  "usage_profiles": {
+    "light": 10,
+    "typical": 50,
+    "heavy": 300
+  },
   "spend_points": [
     {
       "name": "POST /api/explain (chat)",
       "model": "example-flash",
-      "in_price_per_m": 0.30,
-      "out_price_per_m": 2.50,
+      "in_price_per_m": 0.3,
+      "out_price_per_m": 2.5,
       "avg_input_tokens": 1500,
       "avg_output_tokens": 600,
       "max_input_tokens": 30000,
@@ -23,7 +27,14 @@
       "share_of_calls": 0.8,
       "fanout": 1,
       "max_requests_per_hour": 3600,
-      "rate_limited": false
+      "limit_source": "unbounded",
+      "after": {
+        "max_input_tokens": 4000,
+        "max_output_tokens": 800,
+        "max_requests_per_hour": 300,
+        "limit_source": "confirmed",
+        "_note": "30 calls/user/day quota, 4000-char input cap, maxOutputTokens 800; 300/h = global Vercel Firewall rule"
+      }
     },
     {
       "name": "POST /api/diagram (image)",
@@ -38,7 +49,11 @@
       "share_of_calls": 0.2,
       "fanout": 1,
       "max_requests_per_hour": 600,
-      "rate_limited": true
+      "limit_source": "confirmed",
+      "after": {
+        "max_requests_per_hour": 60,
+        "limit_source": "confirmed"
+      }
     }
   ]
 }

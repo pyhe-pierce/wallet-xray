@@ -58,6 +58,7 @@ Use `scripts/cost_calc.py` if present (fill a JSON like `references/cost_input_e
 - **Cost per call** = input_tokens × in_price/1M + output_tokens × out_price/1M (+ per-image / per-email / per-minute fees). Estimate tokens from the actual prompt in the code (system prompt + typical user input + any retrieved context); ~4 chars ≈ 1 token for English, ~1–1.5 chars ≈ 1 token for Chinese.
 - **Cost per active user / month** = Σ (cost per call × calls per user per month). If the user hasn't said usage, assume light / typical / heavy (e.g. 10 / 50 / 300 calls) and show all three.
 - **Worst-case burn per hour** = cost per call at **max** input/output × max requests per hour.
+  - Label every request cap as **confirmed** (you read the limit in code or the dashboard), **estimated** (a guess, e.g. provider RPM from docs), or **unbounded** (no limit found). For unbounded endpoints, write the figure as "≥ $N/h at an assumed rate" — never present it as a ceiling.
   - Max requests/hour = the rate limit if one exists; if not, the provider's account limit (RPM) — or for a leaked key, assume the provider limit applies to the attacker.
   - If there is no `max_tokens`, use the model's max output.
 - **Margin** = (price − payment fees − cost per paying user − share of free users' cost) / price. Free users count: 1,000 free users who each cost $0.20 is $200/month someone has to pay.
@@ -71,7 +72,7 @@ Use this shape (translate headings to the user's language):
 
 ### Three numbers
 - Cost per active user: $x (light) / $y (typical) / $z (heavy) per month
-- Worst-case burn: $N per hour via <endpoint>  (≈ $N×24 per day)
+- Worst-case burn: $N per hour via <endpoint>  (≈ $N×24 per day) — confirmed / estimated / unbounded
 - Margin at current price: x%  (break-even at N paying users)
 
 ### Holes, ordered by money saved per minute of fixing
@@ -96,6 +97,16 @@ Severity:
 ### Step 6 — Offer fixes
 
 Ask once whether to apply the 🔴 fixes. When applying, use the patterns in `references/fix-recipes.md`, keep changes minimal, and never print secret values back in chat. If a key was ever exposed publicly, the fix is **rotate the key first**, then move it server-side — deleting it from code does not un-leak it.
+
+### Step 7 — Before / after
+
+After fixes are applied, re-run the scan, then add an `after` block to each spend point in the cost JSON (new caps, `limit_source: "confirmed"` only for limits you can point to in code) and re-run `cost_calc.py`. Report:
+
+```
+Worst case: $X/h → $Y/h  (exposure −Z%)
+```
+
+Only quote the "after" number as confirmed if every cap behind it is confirmed; otherwise say which ones are still estimates. This line is the part people screenshot — keep it honest.
 
 ## Notes
 

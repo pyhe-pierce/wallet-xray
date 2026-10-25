@@ -18,8 +18,12 @@ then gives you three numbers and a fix list.
 🔴 .env.local tracked by git
 🔴 app/api/webhook/creem/route.ts — NO signature check (anyone can fake a payment)
 
-Worst-case burn: $106/hour via POST /api/explain  (≈ $2,547/day)
+Worst-case burn: ≥ $106/hour via POST /api/explain  (no limit found)
+
+After fixes:  $130/h → $3.36/h   exposure −97.4%   (all limits confirmed in code)
 ```
+
+> Security tools protect your data. Wallet X-Ray protects your wallet.
 
 ## Why this exists
 
@@ -38,6 +42,7 @@ Neither was a "data breach". Both were wallet breaches.
 | **1. Cost per active user / month** | light / typical / heavy usage, from the actual prompts in your code |
 | **2. Worst-case burn per hour** | max tokens × max requests on your weakest endpoint |
 | **3. Margin** | your price − payment fees − AI cost − the free users you subsidize |
+| **4. Before / after** | worst-case $/hour before and after the fixes, with every limit labelled confirmed / estimated / unbounded |
 
 Plus:
 - 🔴 / 🟡 / 🟢 holes, **sorted by money saved per minute of fixing**

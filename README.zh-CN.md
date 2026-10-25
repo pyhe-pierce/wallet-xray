@@ -59,6 +59,15 @@ Claude Code 插件方式：
 python3 skills/wallet-xray/scripts/scan.py 你的项目路径
 ```
 
+## 在真实开源项目上测过
+
+发布前在 8 个公开的 AI app 上跑过扫描，每一条结果都人工核对过。这一轮发现并修掉了：直接用 `fetch()` 调 Replicate 漏报、限流检测区分大小写、辅助函数没继承调用它的路由的保护、用户自带 key 的项目被误算成你的账单。
+
+修完之后：真漏洞全部标红，这些项目上没有红色误报。比如：
+- Google 官方 `gemini-image-editing-nextjs-quickstart`：生图接口没登录没限流，原样部署的话谁都能用你的 key 生图
+- Google 官方 `starter-applets`：`VITE_GEMINI_API_KEY` 会被打包进前端 JS
+- `vercel-labs/gemini-chatbot`：要登录但没有每人限额，免费账号就能无限调用
+
 ## 说在前面
 
 - 扫描脚本靠关键词匹配，**会有误报，也可能漏掉**。skill 会让 AI 逐个打开文件确认后再报告，但这是体检，不是保险。

@@ -33,3 +33,37 @@ def test_cost_calc_runs():
     ex = os.path.join(ROOT, "skills", "wallet-xray", "references", "cost_input_example.json")
     p = subprocess.run([sys.executable, CALC, ex], check=True, capture_output=True, text=True)
     assert "Worst-case burn" in p.stdout and "margin" in p.stdout
+
+
+# --- regressions found by testing on real open-source apps ---
+PAT = os.path.join(ROOT, "tests", "fixtures", "patterns")
+
+def scan_pat():
+    out = os.path.join(tempfile.mkdtemp(), "p.json")
+    subprocess.run([sys.executable, SCAN, PAT, "--json", out], check=True, capture_output=True)
+    r = json.load(open(out))
+    return r, {(s["file"], s["provider"]): s for s in r["spend_points"]}
+
+def test_fetch_replicate_detected_and_camelcase_ratelimit():
+    _, sp = scan_pat()
+    s = sp[("app/api/gen/route.ts", "image-gen")]          # raw fetch() to Replicate used to be missed
+    assert s["guards"]["rate_limit"]                        # enforceRateLimit (capital R) used to be missed
+    assert s["severity"] == "green"
+
+def test_helper_inherits_guards_from_route():
+    _, sp = scan_pat()
+    s = sp[("lib/ai.ts", "ai-sdk")]
+    assert "app/api/chat/route.ts" in s["called_from"]
+    assert s["severity"] == "green"                        # auth + hourly limit + maxOutputTokens
+    assert s["runs_in"] == "server"                         # `import type` from a client page must not flip it
+
+def test_byok_is_not_your_bill():
+    _, sp = scan_pat()
+    assert sp[("app/api/byok/route.ts", "openai")]["byok"]
+    assert sp[("app/api/byok/route.ts", "openai")]["severity"] == "green"
+
+def test_noise_filtered():
+    r, sp = scan_pat()
+    assert ("lib/models.ts", "openrouter") not in sp        # free /models listing
+    assert sp[("scripts/bench.ts", "openai")]["dev_only"]
+    assert not any("ORGANIZATION_ID" in e["name"] for e in r["public_secret_env"])

@@ -95,9 +95,25 @@ python3 skills/wallet-xray/scripts/scan.py examples/leaky-app
 - Hard-coded keys (masked in output), secret-looking `NEXT_PUBLIC_` / `VITE_` / `EXPO_PUBLIC_` vars, `.env` files tracked by git
 - Payment webhooks without signature verification
 
+## Tested on real open-source apps
+
+Before release, the scanner was run on 8 public AI apps and every finding was checked by hand. That round found and fixed a missed raw `fetch()` to Replicate, case-sensitive rate-limit detection, helper files that didn't inherit their route's guards, and BYOK apps being flagged as your bill.
+
+| Repo | 🔴 | What the 🔴 / 🟡 mean (hand-checked) |
+|---|---|---|
+| google-gemini/gemini-image-editing-nextjs-quickstart | 1 | Image-generation route with no auth or rate limit — if deployed as-is, anyone can generate images on your key |
+| google-gemini/starter-applets | 3 | `VITE_GEMINI_API_KEY` used in browser code — Vite bundles it into public JS (the pattern behind real multi-thousand-dollar bills) |
+| vercel-labs/gemini-chatbot | 0 | 🟡 Login required but no per-user quota — any free account can call it without limit |
+| vercel/ai-chatbot | 0 | 🟡 Hourly message limit ✅, but no output-token cap and free guest accounts |
+| Nutlope/llamacoder | 0 | 🟢 IP rate limits + input limits on every paid route |
+| Nutlope/roomGPT, Nutlope/restorePhotos | 0 | 🟢 Replicate calls behind an Upstash IP limit (5/day) |
+| mckaywrigley/chatbot-ui | 0 | 🟢 Users bring their own keys — their bill, not yours; 🟡 check storage bucket policies |
+
+Result after fixes: every real hole flagged red, no red false positives on these repos. Sample code is often written for local use — the point is what happens when it's deployed unchanged.
+
 ## Honest limits
 
-- The scanner is **pattern matching**. It will have false positives and can miss unusual code. The skill tells the agent to open and confirm every finding before reporting — but this is a check-up, not insurance.
+- The scanner is **pattern matching** plus a simple import graph. It will have false positives and can miss unusual code. The skill tells the agent to open and confirm every finding before reporting — but this is a check-up, not insurance.
 - Cost numbers are estimates built on stated assumptions. They're meant to show orders of magnitude (is it $5 or $5,000?), not to replace your provider's billing dashboard.
 - This is for auditing **your own** app. Don't point it at other people's systems.
 

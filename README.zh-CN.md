@@ -34,12 +34,12 @@
 ## 安装
 
 ```bash
-npx skills add YOUR_GITHUB_NAME/wallet-xray
+npx skills add pyhe-pierce/wallet-xray
 ```
 
 Claude Code 插件方式：
 ```
-/plugin marketplace add YOUR_GITHUB_NAME/wallet-xray
+/plugin marketplace add pyhe-pierce/wallet-xray
 /plugin install wallet-xray@wallet-xray
 ```
 

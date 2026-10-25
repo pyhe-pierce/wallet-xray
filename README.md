@@ -49,18 +49,18 @@ Plus:
 
 **skills CLI (Claude Code, Cursor, Codex, etc.)**
 ```bash
-npx skills add YOUR_GITHUB_NAME/wallet-xray
+npx skills add pyhe-pierce/wallet-xray
 ```
 
 **Claude Code plugin**
 ```
-/plugin marketplace add YOUR_GITHUB_NAME/wallet-xray
+/plugin marketplace add pyhe-pierce/wallet-xray
 /plugin install wallet-xray@wallet-xray
 ```
 
 **Manual**
 ```bash
-git clone https://github.com/YOUR_GITHUB_NAME/wallet-xray
+git clone https://github.com/pyhe-pierce/wallet-xray
 cp -r wallet-xray/skills/wallet-xray ~/.claude/skills/
 ```
 

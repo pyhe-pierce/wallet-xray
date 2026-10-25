@@ -1,0 +1,11 @@
+{
+  "name": "wallet-xray",
+  "owner": { "name": "Pierce He" },
+  "plugins": [
+    {
+      "name": "wallet-xray",
+      "source": "./",
+      "description": "Money audit for AI-built apps: cost per user, worst-case burn per hour, margin, and fixes."
+    }
+  ]
+}

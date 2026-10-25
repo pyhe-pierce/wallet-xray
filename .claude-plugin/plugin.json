@@ -1,0 +1,8 @@
+{
+  "name": "wallet-xray",
+  "version": "0.1.0",
+  "description": "Money audit for AI-built apps: cost per user, worst-case burn per hour, margin, and fixes.",
+  "author": { "name": "Pierce He" },
+  "license": "MIT",
+  "keywords": ["cost", "billing", "api-keys", "vibe-coding", "security", "llm"]
+}

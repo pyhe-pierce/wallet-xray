@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+wallet-scan.json
+.DS_Store

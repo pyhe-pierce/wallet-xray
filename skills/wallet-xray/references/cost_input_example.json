@@ -1,0 +1,44 @@
+{
+  "app": "Example Study App",
+  "currency": "USD",
+  "prices_checked": "YYYY-MM-DD — fill from official pricing pages",
+  "price_per_month": 9.99,
+  "payment_fee_pct": 5.0,
+  "payment_fee_fixed": 0.5,
+  "free_users": 1000,
+  "paying_users": 50,
+  "free_user_usage_ratio": 0.2,
+  "usage_profiles": { "light": 10, "typical": 50, "heavy": 300 },
+  "spend_points": [
+    {
+      "name": "POST /api/explain (chat)",
+      "model": "example-flash",
+      "in_price_per_m": 0.30,
+      "out_price_per_m": 2.50,
+      "avg_input_tokens": 1500,
+      "avg_output_tokens": 600,
+      "max_input_tokens": 30000,
+      "max_output_tokens": 8192,
+      "fixed_fee_per_call": 0,
+      "share_of_calls": 0.8,
+      "fanout": 1,
+      "max_requests_per_hour": 3600,
+      "rate_limited": false
+    },
+    {
+      "name": "POST /api/diagram (image)",
+      "model": "example-image",
+      "in_price_per_m": 0,
+      "out_price_per_m": 0,
+      "avg_input_tokens": 0,
+      "avg_output_tokens": 0,
+      "max_input_tokens": 0,
+      "max_output_tokens": 0,
+      "fixed_fee_per_call": 0.04,
+      "share_of_calls": 0.2,
+      "fanout": 1,
+      "max_requests_per_hour": 600,
+      "rate_limited": true
+    }
+  ]
+}

@@ -114,7 +114,18 @@ Before release, the scanner was run on 8 public AI apps and every finding was ch
 | Nutlope/roomGPT, Nutlope/restorePhotos | 0 | 🟢 Replicate calls behind an Upstash IP limit (5/day) |
 | mckaywrigley/chatbot-ui | 0 | 🟢 Users bring their own keys — their bill, not yours; 🟡 check storage bucket policies |
 
-Result after fixes: every real hole flagged red, no red false positives on these repos. Sample code is often written for local use — the point is what happens when it's deployed unchanged.
+Then, to check it wasn't just tuned to those 8, it was run on 4 repos it had never seen:
+
+| Repo | 🔴 | Hand-checked |
+|---|---|---|
+| openai/openai-realtime-console | 1 | `/session` endpoint opens Realtime voice sessions on your key with no auth or limit |
+| steven-tey/novel | 1 | Upload route writes public files to Vercel Blob for anyone, no auth or limit (🟢 the AI route has an IP limit) |
+| Nutlope/twitterbio | 1 | Client picks the `model` and there's no rate limit |
+| google-gemini/live-api-web-console | 1 | `REACT_APP_GEMINI_API_KEY` bundled into the browser |
+
+4 / 4 real holes caught; one duplicate finding (a type import) was found and fixed.
+
+Across all 12: every real hole flagged red, no red false positives after fixes. Sample code is often written for local use — the point is what happens when it's deployed unchanged.
 
 ## Honest limits
 

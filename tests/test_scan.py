@@ -78,3 +78,10 @@ def test_literal_key_in_browser_constructor():
     subprocess.run([sys.executable, SCAN, d, "--json", out], check=True, capture_output=True)
     s = json.load(open(out))["spend_points"][0]
     assert s["runs_in"] == "browser" and s["severity"] == "red"
+
+def test_type_import_is_not_a_spend_point():
+    d = tempfile.mkdtemp(); os.makedirs(os.path.join(d, "src"))
+    open(os.path.join(d, "src", "types.ts"), "w").write('import {\n  GoogleGenAIOptions,\n  LiveServerMessage,\n} from "@google/genai";\nexport type X = GoogleGenAIOptions;\n')
+    out = os.path.join(d, "r.json")
+    subprocess.run([sys.executable, SCAN, d, "--json", out], check=True, capture_output=True)
+    assert json.load(open(out))["spend_points"] == []

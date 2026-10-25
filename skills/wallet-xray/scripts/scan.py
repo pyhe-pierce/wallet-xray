@@ -18,7 +18,7 @@ MAX_BYTES = 800_000
 SPEND = [
     ("openai", "LLM", r"new\s+OpenAI\s*\(|chat\.completions\.create|responses\.create|api\.openai\.com|createOpenAI\s*\("),
     ("anthropic", "LLM", r"new\s+Anthropic\s*\(|\.messages\.create\s*\(|api\.anthropic\.com|createAnthropic\s*\("),
-    ("gemini", "LLM", r"GoogleGenerativeAI|GoogleGenAI|generateContent(Stream)?\s*\(|generativelanguage\.googleapis\.com|createGoogleGenerativeAI|aiplatform\.googleapis\.com"),
+    ("gemini", "LLM", r"\bGoogleGenerativeAI\b(?!Options|Config|Params)|\bGoogleGenAI\b|generateContent(Stream)?\s*\(|generativelanguage\.googleapis\.com|createGoogleGenerativeAI|aiplatform\.googleapis\.com"),
     ("openrouter", "LLM", r"openrouter\.ai"),
     ("other-llm", "LLM", r"together-ai|api\.together\.(xyz|ai)|new\s+Together\s*\(|groq-sdk|api\.groq\.com|api\.mistral\.ai|@mistralai|api\.deepseek\.com|api\.x\.ai|api\.fireworks\.ai|api\.perplexity\.ai|api\.cohere\.(ai|com)"),
     ("ai-sdk", "LLM", r"\b(generateText|streamText|generateObject|streamObject|embedMany|generateImage)\s*\("),

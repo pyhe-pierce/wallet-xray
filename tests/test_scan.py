@@ -96,3 +96,8 @@ def test_stub_webhook_is_not_red():
     r, _ = scan_pat()
     w = {x["file"]: x for x in r["webhooks"]}
     assert w["app/api/webhooks/old/route.ts"]["severity"] == "green"
+
+def test_guest_bypass_fixed_by_block_or_cache():
+    _, sp = scan_pat()
+    assert sp[("app/api/guest-blocked/route.ts", "gemini")]["severity"] != "red"   # guests rejected up front
+    assert sp[("app/api/guest-cached/route.ts", "gemini")]["severity"] == "yellow" # guests served from a shared cache

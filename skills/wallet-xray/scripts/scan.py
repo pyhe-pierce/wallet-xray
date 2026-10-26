@@ -55,6 +55,8 @@ GUARDS = {
 }
 # guard skipped based on something the client controls (cookie / header / query / body flag)
 BYPASS = re.compile(r"""(cookie[^\n]{0,40}?\.get\(\s*['"][^'"]*(guest|demo|trial|bypass|skip|admin|internal|test)[^'"]*['"]\s*\)|headers\.get\(\s*['"]x-(guest|demo|bypass|skip|admin|internal|test)[^'"]*['"]\s*\)|searchParams\.get\(\s*['"](guest|demo|bypass|skip|admin)['"]\s*\)|body\??\.(isGuest|guest|demo|bypass|skipAuth|isAdmin))""", re.I)
+GUEST_BLOCKED = re.compile(r"if\s*\(\s*is\w*(Guest|Demo|Trial)\w*\s*\)\s*\{?\s*(return\s+[\w.]+\.json\(\s*\{[^}]*\}\s*,\s*\{\s*status:\s*4\d\d|return\s+new\s+Response\([^)]*status:\s*4\d\d)", re.S)
+GUEST_CACHED = re.compile(r"is\w*(Guest|Demo|Trial)\w*\s*\?\s*(await\s+)?\w*[Cc]ache\w*\s*\(")
 CLIENT_DIRECTIVE = re.compile(r"^\s*['\"]use client['\"]", re.M)
 SERVER_DIRECTIVE = re.compile(r"^\s*['\"]use server['\"]", re.M)
 ROUTE_HANDLER = re.compile(r"export\s+(async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE)\b|export\s+const\s+(GET|POST|PUT|PATCH|DELETE)\b|export\s+default\s+(async\s+)?function\s+handler|app\.(get|post|put)\(|router\.(get|post|put)\(|Deno\.serve|serve\(\s*async|@app\.(route|post|get)|onRequest\(")
@@ -270,6 +272,8 @@ def scan(root):
                 "max_tokens_from_request": bool(MAXTOK_FROM_BODY.search(text)),
                 "possible_fanout": bool(FANOUT.search(text)),
                 "client_bypass": bool(BYPASS.search(text)) and bool(re.search(r"if\s*\(\s*!?\s*is\w*(Guest|Demo|Admin|Bypass|Trial)\b|\?\s*\w*(GUEST|DEMO)", text)),
+                "bypass_blocked": bool(GUEST_BLOCKED.search(text)),
+                "bypass_cached": bool(GUEST_CACHED.search(text)),
             })
 
     for s in spend:
@@ -282,7 +286,9 @@ def scan(root):
             s["severity"], s["why"] = "yellow", "provider SDK used in the browser but no key in this file — likely calls your own endpoint; confirm"
         elif s["runs_in"] == "browser" and s["kind"] not in ("Maps", "Storage"):
             s["severity"], s["why"] = "red", "paid call runs in the browser — key is public"
-        elif s["client_bypass"]:
+        elif s["client_bypass"] and s["bypass_cached"]:
+            s["severity"], s["why"] = "yellow", "guest/demo path is client-controlled but its AI output is cached — confirm the cache key can't be changed by the client"
+        elif s["client_bypass"] and not s["bypass_blocked"]:
             s["severity"], s["why"] = "red", "auth/limit is skipped based on a client-controlled cookie/header/flag — anyone can set it"
         elif s["model_from_request"] or s["max_tokens_from_request"]:
             s["severity"], s["why"] = "red", "client controls model / max_tokens"

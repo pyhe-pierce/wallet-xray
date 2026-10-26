@@ -125,7 +125,18 @@ Then, to check it wasn't just tuned to those 8, it was run on 4 repos it had nev
 
 4 / 4 real holes caught; one duplicate finding (a type import) was found and fixed.
 
-Across all 12: every real hole flagged red, no red false positives after fixes. Sample code is often written for local use — the point is what happens when it's deployed unchanged.
+Across all 12: every real hole flagged red, no red false positives after fixes.
+
+### And on a real production app
+
+The author ran it on his own live study app (Next.js + Supabase + Gemini). It found a `guestMode` cookie that skipped **both** login and the monthly usage limit on three AI routes — one with no input cap and a 65k-token output cap.
+
+```
+Before:  ≥ $418/hour reachable by anyone, no account needed  (no limit — assumed 10 req/min)
+After:   ≤ ~$0.06/day for guests — demo output cached, guest note generation requires an account  (confirmed in code)
+```
+
+The first scan actually rated those routes yellow (the limit code existed in the file). Reading the code found the bypass; the scanner now detects this pattern, and recognizes the fix. Sample code is often written for local use — the point is what happens when it's deployed unchanged.
 
 ## Honest limits
 

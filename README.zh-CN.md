@@ -69,6 +69,14 @@ python3 skills/wallet-xray/scripts/scan.py 你的项目路径
 - Google 官方 `starter-applets`：`VITE_GEMINI_API_KEY` 会被打包进前端 JS
 - `vercel-labs/gemini-chatbot`：要登录但没有每人限额，免费账号就能无限调用
 
+为了确认它不是只对这 8 个项目"调得刚好"，又拿 4 个从没见过的项目测了一遍，4 个真漏洞全部抓到：
+- OpenAI 官方 `openai-realtime-console`：`/session` 接口谁都能用你的 key 开实时语音
+- `steven-tey/novel`：上传接口谁都能往你的 Vercel Blob 存公开文件
+- `Nutlope/twitterbio`：模型由前端决定，而且没有限流
+- Google 官方 `live-api-web-console`：`REACT_APP_GEMINI_API_KEY` 被打包进前端
+
+12 个项目合计：真漏洞全部标红，修复后没有红色误报。
+
 ## 说在前面
 
 - 扫描脚本靠关键词匹配，**会有误报，也可能漏掉**。skill 会让 AI 逐个打开文件确认后再报告，但这是体检，不是保险。

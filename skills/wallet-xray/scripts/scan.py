@@ -53,6 +53,8 @@ GUARDS = {
     "max_tokens": re.compile(r"max_tokens|maxTokens|maxOutputTokens|max_output_tokens|max_completion_tokens|maxCompletionTokens", re.I),
     "input_cap": re.compile(r"\.length\s*>\s*\w+|\.slice\(0,\s*\w+\)|maxLength|\.max\(\s*\d+|MAX_\w*(CHARS|LENGTH|TOKENS|SIZE)|input[_\-]?limits", re.I),
 }
+# guard skipped based on something the client controls (cookie / header / query / body flag)
+BYPASS = re.compile(r"""(cookie[^\n]{0,40}?\.get\(\s*['"][^'"]*(guest|demo|trial|bypass|skip|admin|internal|test)[^'"]*['"]\s*\)|headers\.get\(\s*['"]x-(guest|demo|bypass|skip|admin|internal|test)[^'"]*['"]\s*\)|searchParams\.get\(\s*['"](guest|demo|bypass|skip|admin)['"]\s*\)|body\??\.(isGuest|guest|demo|bypass|skipAuth|isAdmin))""", re.I)
 CLIENT_DIRECTIVE = re.compile(r"^\s*['\"]use client['\"]", re.M)
 SERVER_DIRECTIVE = re.compile(r"^\s*['\"]use server['\"]", re.M)
 ROUTE_HANDLER = re.compile(r"export\s+(async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE)\b|export\s+const\s+(GET|POST|PUT|PATCH|DELETE)\b|export\s+default\s+(async\s+)?function\s+handler|app\.(get|post|put)\(|router\.(get|post|put)\(|Deno\.serve|serve\(\s*async|@app\.(route|post|get)|onRequest\(")
@@ -232,7 +234,8 @@ def scan(root):
             continue
 
         if "webhook" in rel.lower() and ROUTE_HANDLER.search(text):
-            webhooks.append({"file": rel, "verified": bool(WEBHOOK_VERIFY.search(text))})
+            acts = bool(re.search(r"\.(insert|update|upsert|delete|rpc)\s*\(|prisma\.|\.save\(|grant|credit|plan|subscription|fetch\(", text, re.I))
+            webhooks.append({"file": rel, "verified": bool(WEBHOOK_VERIFY.search(text)), "acts": acts})
 
         runs = where_it_runs(rel, text, traits, root)
         is_dev = bool(DEV_PATH.search(rel))
@@ -266,6 +269,7 @@ def scan(root):
                 "model_from_request": bool(MODEL_FROM_BODY.search(text)) and bool(BODY_READ.search(text)) and not MODEL_ALLOWLIST.search(text),
                 "max_tokens_from_request": bool(MAXTOK_FROM_BODY.search(text)),
                 "possible_fanout": bool(FANOUT.search(text)),
+                "client_bypass": bool(BYPASS.search(text)) and bool(re.search(r"if\s*\(\s*!?\s*is\w*(Guest|Demo|Admin|Bypass|Trial)\b|\?\s*\w*(GUEST|DEMO)", text)),
             })
 
     for s in spend:
@@ -278,6 +282,8 @@ def scan(root):
             s["severity"], s["why"] = "yellow", "provider SDK used in the browser but no key in this file — likely calls your own endpoint; confirm"
         elif s["runs_in"] == "browser" and s["kind"] not in ("Maps", "Storage"):
             s["severity"], s["why"] = "red", "paid call runs in the browser — key is public"
+        elif s["client_bypass"]:
+            s["severity"], s["why"] = "red", "auth/limit is skipped based on a client-controlled cookie/header/flag — anyone can set it"
         elif s["model_from_request"] or s["max_tokens_from_request"]:
             s["severity"], s["why"] = "red", "client controls model / max_tokens"
         elif s["kind"] == "Storage" and not s["entrypoint"] and s["runs_in"] != "server":
@@ -312,7 +318,7 @@ def scan(root):
                           "why": "contains real-looking values" if real else "only placeholders — but add it to .gitignore"})
 
     for w in webhooks:
-        w["severity"] = "green" if w["verified"] else "red"
+        w["severity"] = "green" if (w["verified"] or not w["acts"]) else "red"
 
     return {"root": root, "traits": traits, "spend_points": spend, "exposed_keys": keys,
             "public_secret_env": public_env, "git_tracked_env_files": env_files, "webhooks": webhooks}
@@ -345,7 +351,7 @@ def print_summary(r):
             print(f"  {ICON[e['severity']]} {e['file']} — {e['why']}")
     print(f"\nWebhooks: {len(r['webhooks'])}")
     for w in r["webhooks"]:
-        print(f"  {ICON[w['severity']]} {w['file']} — {'signature check found' if w['verified'] else 'NO signature check found'}")
+        print(f"  {ICON[w['severity']]} {w['file']} — {'signature check found' if w['verified'] else ('stub — does nothing, no risk' if not w['acts'] else 'NO signature check found')}")
     print("\nHeuristic results. Open each flagged file and confirm before reporting.")
 
 

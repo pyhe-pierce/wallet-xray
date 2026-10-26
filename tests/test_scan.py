@@ -85,3 +85,14 @@ def test_type_import_is_not_a_spend_point():
     out = os.path.join(d, "r.json")
     subprocess.run([sys.executable, SCAN, d, "--json", out], check=True, capture_output=True)
     assert json.load(open(out))["spend_points"] == []
+
+def test_client_cookie_bypass_is_red():
+    # found in a real app: `guestMode` cookie skipped both auth and the monthly limit
+    _, sp = scan_pat()
+    s = sp[("app/api/guest-note/route.ts", "gemini")]
+    assert s["client_bypass"] and s["severity"] == "red"
+
+def test_stub_webhook_is_not_red():
+    r, _ = scan_pat()
+    w = {x["file"]: x for x in r["webhooks"]}
+    assert w["app/api/webhooks/old/route.ts"]["severity"] == "green"

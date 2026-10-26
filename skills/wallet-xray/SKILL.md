@@ -113,6 +113,7 @@ Only quote the "after" number as confirmed if every cap behind it is confirmed; 
 - Free sign-up is not a guard. Treat "any logged-in user" as "anyone" unless there's a per-user quota.
 - Guest / anonymous sign-in is the same: if anyone can mint a guest account, a per-user limit can be multiplied by creating accounts. Look for a per-IP limit too, or a limit on guest creation.
 - Next.js server actions (`'use server'`) are public POST endpoints. Guard them exactly like API routes.
+- "Guest / demo mode" decided by a cookie, header, query param or body flag is client-controlled. If it skips auth or the usage limit, anyone can set it. Guest mode should serve cached demo output, or have its own per-IP limit enforced server-side.
 - BYOK (the user pastes their own API key) means the bill is theirs, not yours — lower severity. Still check there's no fallback to your own env key, and that their keys aren't logged or returned to the browser.
 - When the scanner says "guards inherited from X", the guard was found in the route that calls the helper. Open X and confirm the check runs *before* the paid call, on every code path.
 - Supabase `anon` key in the browser is normal **only if RLS is on**; the `service_role` key in the browser is always 🔴.
